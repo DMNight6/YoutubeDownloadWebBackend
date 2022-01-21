@@ -58,13 +58,23 @@ App.get('/download', async(req, res) => {
     };
 }); // Sends file.
 
+App.get('/audioRender', async(req, res) => {
+    let fs = require('fs');
+    let path = require('path');
+
+    let link = req.query.link;
+    if (!link) res.send('Nothing to see here.');
+    try { new URL(link) } catch { return res.send('Query is not link')}
+
+    let file = fs.createWriteStream(path.resolve('audio.mp3'));
+    ytdl(link, { filter: 'audioonly', quality: 'highestaudio'}).pipe(file)
+    file.once('finish', () => { file.end(); res.sendFile(path.resolve('audio.mp3')), (err) => { if (err) res.sendStatus(500); fs.unlinkSync(path.resolve('audio.mp3'))} })
+}) // Audio Rendering only. (<audio src=''>)
+
 const Server = App.listen(3001, () => {
     let host = Server.address().address;
     let port = Server.address().port;
 }); // Set Host and Port
 
-App.get('/requestSearchList', async(req, res) => {
-    db.exec("SELECT")
-    res.send()
-})
+
 Server.once('listening', () => console.log(`Backend started and listening on ${Server.address().address}:${Server.address().port}`));
