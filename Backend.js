@@ -25,8 +25,6 @@ const listSort = async (data) => {
 App.use(require('cors')())
 
 App.get('/param', async(req, res) => {
-    req.setEncoding('utf-8')
-    res.setDefaultEncoding('utf-8')
     let query = req.query.queryText;
     let valid = false;
     if (!query) return res.send('Query Param cannot be empty!');
@@ -38,8 +36,6 @@ App.get('/param', async(req, res) => {
 }); // sends requested data.
 
 App.get('/download', async(req, res) => {
-    req.setEncoding('utf-8')
-    res.setDefaultEncoding('utf-8')
     let query = req.query.link;
     let formats = req.query.format;
 
@@ -63,8 +59,6 @@ App.get('/download', async(req, res) => {
 }); // Sends file.
 
 App.get('/audioRender', async(req, res) => {
-    req.setEncoding('utf-8')
-    res.setDefaultEncoding('utf-8')
     let fs = require('fs');
     let path = require('path');
 
