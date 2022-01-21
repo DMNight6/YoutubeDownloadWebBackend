@@ -44,9 +44,8 @@ App.get('/download', async(req, res) => {
 
     if (!query) return res.send('Nothing to see here');
 
-    try {new URL(query)} catch {res.send('Query is not link.')}
+    try {new URL(query)} catch { return res.send('Query is not link.')}
 
-    
     if (formats === '.mp3') {
         let file = fs.createWriteStream('video.mp3');
         ytdl(query, { filter: 'audio' }).pipe(file);
@@ -57,19 +56,6 @@ App.get('/download', async(req, res) => {
         file.once('finish', async() => {file.end(); res.sendFile(path.resolve('video.mp4'), (err) => { if(err) res.sendStatus(500); fs.unlinkSync(path.resolve('video.mp4')) });});
     };
 }); // Sends file.
-
-App.get('/audioRender', async(req, res) => {
-    let fs = require('fs');
-    let path = require('path');
-
-    let link = req.query.link;
-    if (!link) res.send('Nothing to see here.');
-    try { new URL(link) } catch { return res.send('Query is not link')}
-
-    let file = fs.createWriteStream(path.resolve('audio.mp3'));
-    ytdl(link, { filter: 'audioonly', quality: 'highestaudio'}).pipe(file)
-    file.once('finish', () => { file.end(); res.sendFile(path.resolve('audio.mp3')), (err) => { if (err) res.sendStatus(500); fs.unlinkSync(path.resolve('audio.mp3'))} })
-}) // Audio Rendering only. (<audio src=''>)
 
 const Server = App.listen(3001, () => {
     let host = Server.address().address;
