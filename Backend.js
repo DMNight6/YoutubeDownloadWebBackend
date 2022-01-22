@@ -57,20 +57,24 @@ App.get('/download', async(req, res) => {
     };
 }); // Sends file.
 
-App.get('/audioRender', (req, res) => {
-    let link = req.query.link;
-    let name = req.query.name;
+App.get('/audioRender/', (req, res) => {
+    const [name, ext] = req.query.name.split('.');
+    const link = req.query.link;
+
+    console.log(ext);
+
+    if (!link) return res.sendStatus(404);
+    if (!name) return res.sendStatus(403);
+    try { new URL(link) } catch { return res.sendStatus(404); }
 
     let fs = require('fs');
     let path = require('path');
 
-    if (!link || !name) return res.sendStatus(403).send('Forbidden Access');
-    try { new URL(link) } catch { return res.sendStatus(403).send('Link incorrect.')};
+    const file = fs.createWriteStream(path.resolve(`${name}.${ext}`));
+    ytdl(link, {quality: 'highestaudio', filter: 'audioonly'}).pipe(file)
 
-    let file = fs.createWriteStream(path.resolve(`${name}.mp3`));
-    ytdl(link, { quality: 'highestaudio', filter: 'audioonly'}).pipe(file);
-    file.once('finish', () => { file.end(); res.sendFile(path.resolve(`${name}.mp3`)), function(err) { if(err) res.sendStatus(500); }});
-    file.once('close', () => fs.unlinkSync(path.resolve(`${name}.mp3`)))
+    file.once('finish', () => { file.end(); res.sendFile(path.resolve(`${name}.${ext}`), function(err) { if (err) res.sendStatus(500); })});
+    file.once('close', () => fs.unlinkSync(path.resolve(`${name}.${ext}`)))
 })
 
 const Server = App.listen(3001, () => {
