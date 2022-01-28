@@ -6,17 +6,17 @@ const ytdl = require('ytdl-core');
 const App = express();
 var db = new sqlite3.Database('./database.db');
 
-const sort = async (data) => {
-    let video = await Youtube.searchOne(data);
-    return [{thumbnail: video.thumbnail.url, name: video.title, duration: video.durationFormatted, videoURL: video.url}]
+const sort = async(data) => {
+    let video = await Youtube.getVideo(Youtube.validate(data) ? data : 'a');
+    return [{thumbnail: video.thumbnail.url, name: video.title, duration: video.durationFormatted, videoURL: video.url, id: 1}]
 } // Sort one video only (For other application end.)
 
-const listSort = async (data) => {
+const listSort = async(data) => {
     let List = [];
-    let video = await Youtube.search(data, {limit: 10});
+    let video = await Youtube.search(data, {limit: 9});
     for (let i = 0; i < video.length; ++i) {
         let v = video[i];
-        List.push({thumbnail: v.thumbnail.url, name: v.title, duration: v.durationFormatted, videoURL: v.url})
+        List.push({thumbnail: v.thumbnail.url, name: v.title, duration: v.durationFormatted, videoURL: v.url, id: `${i+1}`})
     };
 
     return List;
@@ -31,13 +31,13 @@ App.get('/param', async(req, res) => {
 
     try { new URL(query); valid = true; } catch {};
 
-    if (valid) res.send(await sort(query));
+    if (valid) res.send(await sort(new URL(query)));
     else { res.send(await listSort(query)); };
 }); // sends requested data.
 
 App.get('/download', async(req, res) => {
-    let query = req.query.link;
-    let formats = req.query.format;
+    let query = decodeURIComponent(req.query.link);
+    let formats = decodeURIComponent(req.query.name)
 
     let fs = require('fs');
     let path = require('path');
@@ -61,8 +61,6 @@ App.get('/audioRender/', (req, res) => {
     const [name, ext] = req.query.name.split('.');
     const link = req.query.link;
 
-    console.log(ext);
-
     if (!link) return res.sendStatus(404);
     if (!name) return res.sendStatus(403);
     try { new URL(link) } catch { return res.sendStatus(404); }
@@ -72,9 +70,10 @@ App.get('/audioRender/', (req, res) => {
 
     const file = fs.createWriteStream(path.resolve(`${name}.${ext}`));
     ytdl(link, {quality: 'highestaudio', filter: 'audioonly'}).pipe(file)
-
-    file.once('finish', () => { file.end(); res.sendFile(path.resolve(`${name}.${ext}`), function(err) { if (err) res.sendStatus(500); })});
-    file.once('close', () => fs.unlinkSync(path.resolve(`${name}.${ext}`)))
+    
+    file.on('error', (err) => { file.destroy(err); res.sendStatus(500) })
+    file.on('finish', () => { file.end(); res.sendFile(path.resolve(`${name}.${ext}`), function(err) { if (err) res.sendStatus(500); })});
+    file.on('close', () => { if (fs.existsSync(path.resolve(`${name}.${ext}`))) fs.unlinkSync(path.resolve(`${name}.${ext}`)) })
 })
 
 const Server = App.listen(3001, () => {
