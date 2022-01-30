@@ -4,7 +4,6 @@ const Router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const ytdl = require('ytdl-core');
-const FilenameFilter = require('../Functions/FilenameFilter');
 
 Router.get('/', (req, res) => {
     let link = decodeURIComponent(req.query.link);
