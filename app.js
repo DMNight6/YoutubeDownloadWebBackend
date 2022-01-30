@@ -2,6 +2,6 @@ const express = require('express');
 
 const APP = express();
 
-require('./Routes')(APP);
+require('./Route')(APP);
 
 module.exports = APP;
