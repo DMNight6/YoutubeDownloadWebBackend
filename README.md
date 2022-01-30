@@ -1,5 +1,5 @@
 This is my backend for YoutubeDownloadWeb
 
 ## TODO
-- [x] Un-spaghetti the code
-    - [] Work with database[ Sqlite3 ] ( Records like most downloaded audio, most searched video )
+- [o] Un-spaghetti the code
+- [x] Work with database[ Sqlite3 ] ( Records like most downloaded audio, most searched video )
