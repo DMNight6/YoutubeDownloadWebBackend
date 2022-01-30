@@ -2,9 +2,7 @@ const { default: YouTube } = require('youtube-sr');
 const ytdl = require('ytdl-core')
 
 module.exports = async(data) => {
-    let ID = ytdl.getVideoID(data);
-    if (!ID) return [];
-
-    let video = await YouTube.getVideo(`https://youtube.com/watch?v=${ID}`);
+    if (!YouTube.validate(data)) return [] // Return nothing when validation fails
+    let video = await YouTube.getVideo(data);
     return [{ thumbnail: video.thumbnail.url, name: video.title, duration: video.durationFormatted, videoURL: video.url, id: '1'}];
 }
